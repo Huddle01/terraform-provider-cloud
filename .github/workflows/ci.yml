@@ -3,8 +3,11 @@ name: CI
 on:
   pull_request:
     branches: [main]
+    types: [opened, synchronize, reopened, labeled]
   push:
     branches: [main]
+    tags:
+      - "v*"
 
 jobs:
   lint:
@@ -64,13 +67,32 @@ jobs:
   acceptance-test:
     name: Acceptance Tests
     runs-on: ubuntu-latest
-    # Only run acceptance tests on pushes to main or on PRs from within the same
-    # repo (not forks), since secrets are not available to forked pull requests.
+    permissions:
+      pull-requests: write  # needed to remove the trigger label after the run
+    # Run on pushes to main, or when a maintainer adds the 'acceptance-tests' label to a PR.
     if: >
       github.event_name == 'push' ||
       (github.event_name == 'pull_request' &&
-       github.event.pull_request.head.repo.full_name == github.repository)
+       github.event.action == 'labeled' &&
+       github.event.label.name == 'acceptance-tests')
     steps:
+      - name: Verify label was added by a maintainer
+        # Prevent PR authors or contributors from self-triggering acceptance tests.
+        # Only users with write, maintain, or admin permission on the repo may trigger.
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PERMISSION=$(gh api \
+            repos/${{ github.repository }}/collaborators/${{ github.event.sender.login }}/permission \
+            --jq '.permission')
+          echo "Label added by ${{ github.event.sender.login }} with permission: $PERMISSION"
+          if [[ "$PERMISSION" != "admin" && "$PERMISSION" != "maintain" && "$PERMISSION" != "write" ]]; then
+            echo "::error::Only maintainers (write/maintain/admin) may trigger acceptance tests. Removing label."
+            gh pr edit ${{ github.event.pull_request.number }} --remove-label "acceptance-tests" || true
+            exit 1
+          fi
+
       - uses: actions/checkout@v4
 
       - uses: actions/setup-go@v5
@@ -88,3 +110,35 @@ jobs:
           HUDDLE_FLAVOR_ID: ${{ secrets.HUDDLE_FLAVOR_ID }}
           HUDDLE_IMAGE_ID: ${{ secrets.HUDDLE_IMAGE_ID }}
         run: go test ./... -run TestAcc -v -timeout 30m
+
+      - name: Remove trigger label
+        # Always remove the label after the run (pass or fail) so the maintainer
+        # can re-trigger by adding it again without needing to remove it manually.
+        if: always() && github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr edit ${{ github.event.pull_request.number }} --remove-label "acceptance-tests" || true
+
+  release:
+    name: Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [lint, unit-test]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: "go.mod"
+          cache: true
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          version: latest
+          args: release --clean --config .goreleaser.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
