@@ -10,21 +10,34 @@ jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Check out the actual branch so the auto-format commit can be pushed.
+          # For pull_request events this checks out the PR head branch.
+          ref: ${{ github.head_ref || github.ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/setup-go@v5
         with:
           go-version-file: "go.mod"
           cache: true
 
-      - name: Check formatting
+      - name: Format
+        run: gofmt -w .
+
+      - name: Commit formatting fixes
         run: |
-          unformatted=$(gofmt -l .)
-          if [ -n "$unformatted" ]; then
-            echo "The following files need formatting (run 'go fmt ./...'):"
-            echo "$unformatted"
-            exit 1
+          if [ -n "$(git status --porcelain)" ]; then
+            git config user.name  "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add -A
+            git commit -m "chore: auto-format Go code"
+            git push
+          else
+            echo "No formatting changes needed."
           fi
 
       - name: Vet
