@@ -37,6 +37,41 @@ Environment variables:
 - `huddle_cloud_security_group_rule`
 - `huddle_cloud_keypair`
 - `huddle_cloud_instance`
+- `huddle_cloud_volume`
+- `huddle_cloud_volume_attachment`
+
+### Volume lifecycle usage
+
+Create and manage a standalone volume:
+
+```hcl
+resource "huddle_cloud_volume" "data" {
+  name        = "tf-data-volume"
+  size        = 100
+  description = "Application data disk"
+  volume_type = "standard"
+  region      = var.region
+}
+```
+
+Attach and detach explicitly with a separate attachment resource:
+
+```hcl
+resource "huddle_cloud_volume_attachment" "data_to_vm" {
+  volume_id   = huddle_cloud_volume.data.id
+  instance_id = huddle_cloud_instance.example.id
+  region      = var.region
+}
+```
+
+### Storage model note
+
+`huddle_cloud_instance.additional_volume_size` has been removed.
+
+Use explicit resources:
+
+1. Create volume(s) with `huddle_cloud_volume`
+2. Attach to instances with `huddle_cloud_volume_attachment`
 
 ## Data sources
 
@@ -51,8 +86,11 @@ Environment variables:
 - `examples/minimal-vm`
 - `examples/custom-security-rules`
 - `examples/existing-network-instance`
+- `examples/volume-lifecycle`
 
 ## Local development (before registry publish)
+
+The local development workflow is unchanged for volume resources (`huddle_cloud_volume`, `huddle_cloud_volume_attachment`): use the same local mirror installation steps below.
 
 If `terraform init` fails with:
 

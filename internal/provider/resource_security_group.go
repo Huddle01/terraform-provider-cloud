@@ -132,22 +132,31 @@ func (r *securityGroupResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
+	// The create endpoint does not return the default rules that the backend
+	// provisions alongside the security group. Fetch the full record so state
+	// matches what a subsequent Read (or import) would return — otherwise
+	// ImportStateVerify diffs the rules list against the empty post-create state.
+	var detail securityGroupDetailEnvelope
+	if err := r.client.get(ctx, "/security-groups/"+url.PathEscape(out.ID), queryWithRegion(region), &detail); err != nil {
+		resp.Diagnostics.AddError("Read security group after create failed", describeAPIError(err))
+		return
+	}
+
 	plan.ID = types.StringValue(out.ID)
 	plan.Region = types.StringValue(region)
-	plan.CreatedAt = types.StringValue(out.CreatedAt)
-	plan.UpdatedAt = types.StringNull()
-	plan.Rules = types.ListNull(types.ObjectType{
-		AttrTypes: map[string]attr.Type{
-			"id":               types.StringType,
-			"direction":        types.StringType,
-			"ether_type":       types.StringType,
-			"protocol":         types.StringType,
-			"port_range_min":   types.Int64Type,
-			"port_range_max":   types.Int64Type,
-			"remote_ip_prefix": types.StringType,
-			"remote_group_id":  types.StringType,
-		},
-	})
+	plan.CreatedAt = types.StringValue(detail.SecurityGroup.CreatedAt)
+	if detail.SecurityGroup.UpdatedAt == "" {
+		plan.UpdatedAt = types.StringNull()
+	} else {
+		plan.UpdatedAt = types.StringValue(detail.SecurityGroup.UpdatedAt)
+	}
+
+	rules, diags := flattenSecurityGroupRules(detail.SecurityGroup.Rules)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	plan.Rules = rules
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -177,7 +186,14 @@ func (r *securityGroupResource) Read(ctx context.Context, req resource.ReadReque
 	}
 
 	state.Name = types.StringValue(out.SecurityGroup.Name)
-	state.Description = types.StringValue(out.SecurityGroup.Description)
+	// description is Optional (not Computed). Storing "" when the user omitted
+	// the field causes a plan diff that triggers RequiresReplace. Normalize to
+	// null so state stays in sync with an unset config attribute.
+	if out.SecurityGroup.Description == "" {
+		state.Description = types.StringNull()
+	} else {
+		state.Description = types.StringValue(out.SecurityGroup.Description)
+	}
 	state.Region = types.StringValue(region)
 	state.CreatedAt = types.StringValue(out.SecurityGroup.CreatedAt)
 	state.UpdatedAt = types.StringValue(out.SecurityGroup.UpdatedAt)

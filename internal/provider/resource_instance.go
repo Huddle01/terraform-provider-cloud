@@ -28,25 +28,24 @@ type instanceResource struct {
 }
 
 type instanceResourceModel struct {
-	ID                   types.String  `tfsdk:"id"`
-	Name                 types.String  `tfsdk:"name"`
-	FlavorID             types.String  `tfsdk:"flavor_id"`
-	ImageID              types.String  `tfsdk:"image_id"`
-	BootDiskSize         types.Int64   `tfsdk:"boot_disk_size"`
-	AdditionalVolumeSize types.Int64   `tfsdk:"additional_volume_size"`
-	KeyNames             types.List    `tfsdk:"key_names"`
-	SecurityGroupNames   types.List    `tfsdk:"security_group_names"`
-	Tags                 types.List    `tfsdk:"tags"`
-	AssignPublicIP       types.Bool    `tfsdk:"assign_public_ip"`
-	NetworkID            types.String  `tfsdk:"network_id"`
-	PowerState           types.String  `tfsdk:"power_state"`
-	Region               types.String  `tfsdk:"region"`
-	Status               types.String  `tfsdk:"status"`
-	VCPUs                types.Float64 `tfsdk:"vcpus"`
-	RAM                  types.Float64 `tfsdk:"ram"`
-	CreatedAt            types.String  `tfsdk:"created_at"`
-	PrivateIPv4          types.String  `tfsdk:"private_ipv4"`
-	PublicIPv4           types.String  `tfsdk:"public_ipv4"`
+	ID                 types.String  `tfsdk:"id"`
+	Name               types.String  `tfsdk:"name"`
+	FlavorID           types.String  `tfsdk:"flavor_id"`
+	ImageID            types.String  `tfsdk:"image_id"`
+	BootDiskSize       types.Int64   `tfsdk:"boot_disk_size"`
+	KeyNames           types.List    `tfsdk:"key_names"`
+	SecurityGroupNames types.List    `tfsdk:"security_group_names"`
+	Tags               types.List    `tfsdk:"tags"`
+	AssignPublicIP     types.Bool    `tfsdk:"assign_public_ip"`
+	NetworkID          types.String  `tfsdk:"network_id"`
+	PowerState         types.String  `tfsdk:"power_state"`
+	Region             types.String  `tfsdk:"region"`
+	Status             types.String  `tfsdk:"status"`
+	VCPUs              types.Float64 `tfsdk:"vcpus"`
+	RAM                types.Float64 `tfsdk:"ram"`
+	CreatedAt          types.String  `tfsdk:"created_at"`
+	PrivateIPv4        types.String  `tfsdk:"private_ipv4"`
+	PublicIPv4         types.String  `tfsdk:"public_ipv4"`
 }
 
 func NewInstanceResource() resource.Resource {
@@ -75,10 +74,6 @@ func (r *instanceResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 			},
 			"boot_disk_size": schema.Int64Attribute{
 				Required:      true,
-				PlanModifiers: []planmodifier.Int64{int64planmodifier.RequiresReplace()},
-			},
-			"additional_volume_size": schema.Int64Attribute{
-				Optional:      true,
 				PlanModifiers: []planmodifier.Int64{int64planmodifier.RequiresReplace()},
 			},
 			"key_names": schema.ListAttribute{
@@ -165,9 +160,6 @@ func (r *instanceResource) Create(ctx context.Context, req resource.CreateReques
 		"sg_names":         listStringToSlice(plan.SecurityGroupNames),
 		"assign_public_ip": boolOrDefault(plan.AssignPublicIP, true),
 	}
-	if v := int64OrZero(plan.AdditionalVolumeSize); v != nil {
-		body["additional_volume_size"] = *v
-	}
 	if tags := listStringToSlice(plan.Tags); len(tags) > 0 {
 		body["tags"] = tags
 	}
@@ -209,7 +201,6 @@ func (r *instanceResource) Create(ctx context.Context, req resource.CreateReques
 	plan.FlavorID = originalPlan.FlavorID
 	plan.ImageID = originalPlan.ImageID
 	plan.BootDiskSize = originalPlan.BootDiskSize
-	plan.AdditionalVolumeSize = originalPlan.AdditionalVolumeSize
 	plan.KeyNames = originalPlan.KeyNames
 	plan.SecurityGroupNames = originalPlan.SecurityGroupNames
 	plan.Tags = originalPlan.Tags
@@ -238,7 +229,6 @@ func (r *instanceResource) Create(ctx context.Context, req resource.CreateReques
 		plan.FlavorID = originalPlan.FlavorID
 		plan.ImageID = originalPlan.ImageID
 		plan.BootDiskSize = originalPlan.BootDiskSize
-		plan.AdditionalVolumeSize = originalPlan.AdditionalVolumeSize
 		plan.KeyNames = originalPlan.KeyNames
 		plan.SecurityGroupNames = originalPlan.SecurityGroupNames
 		plan.Tags = originalPlan.Tags
@@ -288,7 +278,6 @@ func (r *instanceResource) Read(ctx context.Context, req resource.ReadRequest, r
 	next.FlavorID = state.FlavorID
 	next.ImageID = state.ImageID
 	next.BootDiskSize = state.BootDiskSize
-	next.AdditionalVolumeSize = state.AdditionalVolumeSize
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, next)...)
 }
@@ -340,7 +329,6 @@ func (r *instanceResource) Update(ctx context.Context, req resource.UpdateReques
 	updated.FlavorID = state.FlavorID
 	updated.ImageID = state.ImageID
 	updated.BootDiskSize = state.BootDiskSize
-	updated.AdditionalVolumeSize = state.AdditionalVolumeSize
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, updated)...)
 }

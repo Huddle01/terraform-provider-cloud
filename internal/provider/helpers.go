@@ -88,3 +88,45 @@ func waitForInstanceStatus(ctx context.Context, client *apiClient, instanceID st
 		return strings.EqualFold(payload.Instance.Status, terminalStatus), nil
 	})
 }
+
+func waitForVolumeDeleted(ctx context.Context, client *apiClient, volumeID string, region string, timeout time.Duration) error {
+	return waitForCondition(ctx, timeout, 2*time.Second, func(c context.Context) (bool, error) {
+		var payload volumeDetailEnvelope
+		err := client.get(c, "/volumes/"+volumeID, queryWithRegion(region), &payload)
+		if err != nil {
+			if isNotFound(err) {
+				return true, nil
+			}
+			return false, err
+		}
+		return false, nil
+	})
+}
+
+func waitForVolumeStatus(ctx context.Context, client *apiClient, volumeID string, region string, timeout time.Duration, terminalStatuses ...string) error {
+	target := make([]string, 0, len(terminalStatuses))
+	for _, s := range terminalStatuses {
+		if strings.TrimSpace(s) == "" {
+			continue
+		}
+		target = append(target, strings.ToLower(strings.TrimSpace(s)))
+	}
+	if len(target) == 0 {
+		return nil
+	}
+
+	return waitForCondition(ctx, timeout, 2*time.Second, func(c context.Context) (bool, error) {
+		var payload volumeDetailEnvelope
+		err := client.get(c, "/volumes/"+volumeID, queryWithRegion(region), &payload)
+		if err != nil {
+			return false, err
+		}
+		current := strings.ToLower(strings.TrimSpace(payload.Volume.Status))
+		for _, desired := range target {
+			if current == desired {
+				return true, nil
+			}
+		}
+		return false, nil
+	})
+}

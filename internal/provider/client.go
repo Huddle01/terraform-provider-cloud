@@ -153,8 +153,8 @@ func decodeAPIError(statusCode int, body []byte) error {
 	}
 
 	var payload struct {
-		Error   string `json:"error"`
-		Message string `json:"message"`
+		Error        string `json:"error"`
+		Message      string `json:"message"`
 		NeutronError struct {
 			Type    string `json:"type"`
 			Message string `json:"message"`

@@ -205,6 +205,45 @@ type keyPairPayload struct {
 	UpdatedAt   string `json:"updated_at"`
 }
 
+type volumeRegionRef struct {
+	Name string `json:"name"`
+}
+
+type volumeAttachmentPayload struct {
+	ServerID string `json:"server_id"`
+	Device   string `json:"device"`
+}
+
+type volumePayload struct {
+	ID          string                    `json:"id"`
+	Name        string                    `json:"name"`
+	Description string                    `json:"description"`
+	Size        int64                     `json:"size"`
+	Status      string                    `json:"status"`
+	VolumeType  string                    `json:"volume_type"`
+	Bootable    bool                      `json:"bootable"`
+	Attachments []volumeAttachmentPayload `json:"attachments"`
+	CreatedAt   string                    `json:"created_at"`
+	UpdatedAt   string                    `json:"updated_at"`
+	Region      volumeRegionRef           `json:"region"`
+}
+
+type volumeListEnvelope struct {
+	Volumes []volumePayload `json:"volumes"`
+}
+
+type volumeDetailEnvelope struct {
+	Volume volumePayload `json:"volume"`
+}
+
+type createVolumeEnvelope struct {
+	ID     string          `json:"id"`
+	Name   string          `json:"name"`
+	Size   int64           `json:"size"`
+	Status string          `json:"status"`
+	Region volumeRegionRef `json:"region"`
+}
+
 type flavorsEnvelope struct {
 	Success bool   `json:"success"`
 	Message string `json:"message"`

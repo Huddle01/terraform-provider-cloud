@@ -302,12 +302,28 @@ func (r *securityGroupRuleResource) Read(ctx context.Context, req resource.ReadR
 	}
 
 	state.Direction = types.StringValue(matched.Direction)
-	state.EtherType = types.StringValue(matched.EtherType)
-	state.Protocol = types.StringValue(matched.Protocol)
+	// Use EffectiveEtherType() so both "ether_type" and "ethertype" JSON fields
+	// are handled — the API returns one or the other depending on the backend.
+	state.EtherType = types.StringValue(matched.EffectiveEtherType())
+	// protocol, remote_ip_prefix, remote_group_id are Optional (not Computed).
+	// Store null rather than "" so state stays in sync with an unset config field.
+	if matched.Protocol == "" {
+		state.Protocol = types.StringNull()
+	} else {
+		state.Protocol = types.StringValue(matched.Protocol)
+	}
 	state.PortRangeMin = ptrInt64ToTerraform(matched.PortRangeMin)
 	state.PortRangeMax = ptrInt64ToTerraform(matched.PortRangeMax)
-	state.RemoteIPPrefix = types.StringValue(matched.RemoteIPPrefix)
-	state.RemoteGroupID = types.StringValue(matched.RemoteGroupID)
+	if matched.RemoteIPPrefix == "" {
+		state.RemoteIPPrefix = types.StringNull()
+	} else {
+		state.RemoteIPPrefix = types.StringValue(matched.RemoteIPPrefix)
+	}
+	if matched.RemoteGroupID == "" {
+		state.RemoteGroupID = types.StringNull()
+	} else {
+		state.RemoteGroupID = types.StringValue(matched.RemoteGroupID)
+	}
 	state.CreatedAt = types.StringValue(matched.CreatedAt)
 	state.Region = types.StringValue(region)
 

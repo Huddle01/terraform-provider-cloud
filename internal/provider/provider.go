@@ -130,6 +130,8 @@ func (p *huddleProvider) Resources(_ context.Context) []func() resource.Resource
 		NewSecurityGroupResource,
 		NewSecurityGroupRuleResource,
 		NewKeyPairResource,
+		NewVolumeResource,
+		NewVolumeAttachmentResource,
 		NewInstanceResource,
 	}
 }
