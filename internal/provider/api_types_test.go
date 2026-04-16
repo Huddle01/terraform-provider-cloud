@@ -30,16 +30,16 @@ func TestSecurityRuleUnmarshalJSON_AllFields(t *testing.T) {
 	min := int64(22)
 	max := int64(22)
 	raw, _ := json.Marshal(map[string]any{
-		"id":               "rule-1",
-		"direction":        "ingress",
-		"ether_type":       "IPv4",
-		"protocol":         "tcp",
-		"port_range_min":   min,
-		"port_range_max":   max,
-		"remote_ip_prefix": "0.0.0.0/0",
-		"remote_group_id":  "",
+		"id":                "rule-1",
+		"direction":         "ingress",
+		"ether_type":        "IPv4",
+		"protocol":          "tcp",
+		"port_range_min":    min,
+		"port_range_max":    max,
+		"remote_ip_prefix":  "0.0.0.0/0",
+		"remote_group_id":   "",
 		"security_group_id": "sg-1",
-		"created_at":       "2024-01-01T00:00:00Z",
+		"created_at":        "2024-01-01T00:00:00Z",
 	})
 
 	var r securityRuleItem
