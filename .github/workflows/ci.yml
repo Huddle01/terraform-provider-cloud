@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: "go.mod"
+          cache: true
+
+      - name: Check formatting
+        run: |
+          unformatted=$(gofmt -l .)
+          if [ -n "$unformatted" ]; then
+            echo "The following files need formatting (run 'go fmt ./...'):"
+            echo "$unformatted"
+            exit 1
+          fi
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Build
+        run: go build ./...
+
+  unit-test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: "go.mod"
+          cache: true
+
+      - name: Run unit tests
+        # Excludes TestAcc* acceptance tests — those require a live API
+        run: go test ./... -run "^Test[^A]|^TestA[^c]|^TestAc[^c]" -v -count=1 -timeout 5m
+
+  acceptance-test:
+    name: Acceptance Tests
+    runs-on: ubuntu-latest
+    # Only run acceptance tests on pushes to main or on PRs from within the same
+    # repo (not forks), since secrets are not available to forked pull requests.
+    if: >
+      github.event_name == 'push' ||
+      (github.event_name == 'pull_request' &&
+       github.event.pull_request.head.repo.full_name == github.repository)
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: "go.mod"
+          cache: true
+
+      - name: Run acceptance tests
+        env:
+          TF_ACC: "1"
+          HUDDLE_API_KEY: ${{ secrets.HUDDLE_API_KEY }}
+          HUDDLE_REGION: ${{ secrets.HUDDLE_REGION }}
+          HUDDLE_BASE_URL: ${{ secrets.HUDDLE_BASE_URL }}
+          HUDDLE_SSH_PUBLIC_KEY: ${{ secrets.HUDDLE_SSH_PUBLIC_KEY }}
+          HUDDLE_FLAVOR_ID: ${{ secrets.HUDDLE_FLAVOR_ID }}
+          HUDDLE_IMAGE_ID: ${{ secrets.HUDDLE_IMAGE_ID }}
+        run: go test ./... -run TestAcc -v -timeout 30m

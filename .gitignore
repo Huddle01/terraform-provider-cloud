@@ -1,4 +1,20 @@
-terraform.tfvars
+# Terraform
+*.tfvars
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+crash.log
 
-# ignore go build artifact
+# Build artifacts
 terraform-provider-cloud
+/dist/
+
+# Environment
+.env
+.env.local
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/

@@ -40,24 +40,29 @@ func (p *huddleProvider) Metadata(_ context.Context, _ provider.MetadataRequest,
 
 func (p *huddleProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Provider for Huddle01 Cloud IaaS APIs.",
+		Description:         "Provider for Huddle01 Cloud IaaS APIs.",
+		MarkdownDescription: "The Huddle01 Cloud provider manages cloud infrastructure resources — virtual machines, networks, security groups, keypairs, and volumes — via the Huddle01 Cloud API.",
 		Attributes: map[string]schema.Attribute{
 			"api_key": schema.StringAttribute{
-				Description: "Huddle01 Cloud API key. Defaults to HUDDLE_API_KEY.",
-				Optional:    true,
-				Sensitive:   true,
+				Description:         "Huddle01 Cloud API key. Defaults to HUDDLE_API_KEY.",
+				MarkdownDescription: "Huddle01 Cloud API key used to authenticate all requests. Can also be set via the `HUDDLE_API_KEY` environment variable.",
+				Optional:            true,
+				Sensitive:           true,
 			},
 			"region": schema.StringAttribute{
-				Description: "Default region for region-scoped operations. Defaults to HUDDLE_REGION.",
-				Optional:    true,
+				Description:         "Default region for region-scoped operations. Defaults to HUDDLE_REGION.",
+				MarkdownDescription: "Default region for all resource operations (e.g. `eu2`). Can also be set via the `HUDDLE_REGION` environment variable. Individual resources can override this.",
+				Optional:            true,
 			},
 			"base_url": schema.StringAttribute{
-				Description: "Base API URL. Defaults to https://cloud.huddleapis.com/api/v1.",
-				Optional:    true,
+				Description:         "Base API URL. Defaults to https://cloud.huddleapis.com/api/v1.",
+				MarkdownDescription: "Base URL of the Huddle01 Cloud API. Defaults to `https://cloud.huddleapis.com/api/v1`. Can also be set via the `HUDDLE_BASE_URL` environment variable.",
+				Optional:            true,
 			},
 			"request_timeout_seconds": schema.Int64Attribute{
-				Description: "HTTP request timeout in seconds. Defaults to 60.",
-				Optional:    true,
+				Description:         "HTTP request timeout in seconds. Defaults to 60.",
+				MarkdownDescription: "HTTP request timeout in seconds. Defaults to `60`.",
+				Optional:            true,
 			},
 		},
 	}

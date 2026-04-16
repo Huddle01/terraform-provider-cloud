@@ -45,53 +45,66 @@ func (r *networkResource) Metadata(_ context.Context, req resource.MetadataReque
 
 func (r *networkResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		MarkdownDescription: "Manages a private network and its primary subnet.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Computed: true,
+				Computed:            true,
+				MarkdownDescription: "Unique identifier of the network.",
 			},
 			"name": schema.StringAttribute{
-				Required: true,
+				Required:            true,
+				MarkdownDescription: "Human-readable name for the network.",
 			},
 			"description": schema.StringAttribute{
-				Optional: true,
+				Optional:            true,
+				MarkdownDescription: "Optional description for the network.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"pool_cidr": schema.StringAttribute{
-				Optional: true,
+				Optional:            true,
+				MarkdownDescription: "CIDR block of the allocation pool for the subnet (e.g. `10.0.0.0/8`).",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"primary_subnet_cidr": schema.StringAttribute{
-				Optional: true,
+				Optional:            true,
+				MarkdownDescription: "CIDR block for the primary subnet (e.g. `192.168.1.0/24`). Takes precedence over `primary_subnet_size`.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"primary_subnet_size": schema.Int64Attribute{
-				Optional: true,
+				Optional:            true,
+				MarkdownDescription: "Prefix length used to auto-allocate the primary subnet from `pool_cidr` (e.g. `24` allocates a `/24`).",
 			},
 			"no_gateway": schema.BoolAttribute{
-				Optional: true,
+				Optional:            true,
+				MarkdownDescription: "When `true`, no gateway is created for the subnet. Defaults to `false`.",
 			},
 			"enable_dhcp": schema.BoolAttribute{
-				Optional: true,
+				Optional:            true,
+				MarkdownDescription: "Whether DHCP is enabled on the primary subnet. Defaults to `true`.",
 			},
 			"region": schema.StringAttribute{
-				Optional: true,
-				Computed: true,
+				Optional:            true,
+				Computed:            true,
+				MarkdownDescription: "Region in which to create the network. Defaults to the provider-level region.",
 			},
 			"status": schema.StringAttribute{
-				Computed: true,
+				Computed:            true,
+				MarkdownDescription: "Current status of the network (`ACTIVE`, `DOWN`, etc.).",
 			},
 			"subnets": schema.ListAttribute{
-				Computed:    true,
-				ElementType: types.StringType,
+				Computed:            true,
+				ElementType:         types.StringType,
+				MarkdownDescription: "List of subnet IDs associated with this network.",
 			},
 			"admin_state_up": schema.BoolAttribute{
-				Computed: true,
+				Computed:            true,
+				MarkdownDescription: "Whether the network is administratively up.",
 			},
 		},
 	}

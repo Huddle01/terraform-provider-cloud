@@ -58,74 +58,107 @@ func (r *instanceResource) Metadata(_ context.Context, req resource.MetadataRequ
 
 func (r *instanceResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		MarkdownDescription: "Manages a Huddle01 Cloud virtual machine instance.",
 		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{Computed: true},
+			"id": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "Unique identifier of the instance.",
+			},
 			"name": schema.StringAttribute{
-				Required:      true,
-				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+				Required:            true,
+				MarkdownDescription: "Human-readable name for the instance.",
+				PlanModifiers:       []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"flavor_id": schema.StringAttribute{
-				Required:      true,
-				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+				Required:            true,
+				MarkdownDescription: "ID of the flavor (hardware profile) to use. Use the `huddle_cloud_flavors` data source to list available flavors.",
+				PlanModifiers:       []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"image_id": schema.StringAttribute{
-				Required:      true,
-				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+				Required:            true,
+				MarkdownDescription: "ID of the OS image to boot from. Use the `huddle_cloud_images` data source to list available images.",
+				PlanModifiers:       []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"boot_disk_size": schema.Int64Attribute{
-				Required:      true,
-				PlanModifiers: []planmodifier.Int64{int64planmodifier.RequiresReplace()},
+				Required:            true,
+				MarkdownDescription: "Size of the boot disk in GB. Defaults to `30`.",
+				PlanModifiers:       []planmodifier.Int64{int64planmodifier.RequiresReplace()},
 			},
 			"key_names": schema.ListAttribute{
-				Required:    true,
-				ElementType: types.StringType,
+				Required:            true,
+				ElementType:         types.StringType,
+				MarkdownDescription: "List of keypair names to inject into the instance for SSH access.",
 				PlanModifiers: []planmodifier.List{
 					listplanmodifier.RequiresReplace(),
 				},
 			},
 			"security_group_names": schema.ListAttribute{
-				Required:    true,
-				ElementType: types.StringType,
+				Required:            true,
+				ElementType:         types.StringType,
+				MarkdownDescription: "List of security group names to attach to the instance.",
 				PlanModifiers: []planmodifier.List{
 					listplanmodifier.RequiresReplace(),
 				},
 			},
 			"tags": schema.ListAttribute{
-				Optional:    true,
-				ElementType: types.StringType,
+				Optional:            true,
+				ElementType:         types.StringType,
+				MarkdownDescription: "Map of key/value tags to apply to the instance.",
 				PlanModifiers: []planmodifier.List{
 					listplanmodifier.RequiresReplace(),
 				},
 			},
 			"assign_public_ip": schema.BoolAttribute{
-				Optional: true,
+				Optional:            true,
+				MarkdownDescription: "Whether to assign a public IPv4 address. Defaults to `true`.",
 				PlanModifiers: []planmodifier.Bool{
 					boolplanmodifier.RequiresReplace(),
 				},
 			},
 			"network_id": schema.StringAttribute{
-				Optional: true,
+				Optional:            true,
+				MarkdownDescription: "ID of the network to attach the instance to. If omitted, the workspace default network is used.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"power_state": schema.StringAttribute{
-				Optional: true,
-				Computed: true,
+				Optional:            true,
+				Computed:            true,
+				MarkdownDescription: "Desired power state of the instance. One of `active`, `stopped`, `paused`, `suspended`. Defaults to `active`.",
 				Validators: []validator.String{
 					stringvalidator.OneOf("active", "stopped", "paused", "suspended"),
 				},
 			},
 			"region": schema.StringAttribute{
-				Optional: true,
-				Computed: true,
+				Optional:            true,
+				Computed:            true,
+				MarkdownDescription: "Region in which to create the instance. Defaults to the provider-level region.",
 			},
-			"status":       schema.StringAttribute{Computed: true},
-			"vcpus":        schema.Float64Attribute{Computed: true},
-			"ram":          schema.Float64Attribute{Computed: true},
-			"created_at":   schema.StringAttribute{Computed: true},
-			"private_ipv4": schema.StringAttribute{Computed: true},
-			"public_ipv4":  schema.StringAttribute{Computed: true},
+			"status": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "Current status of the instance as reported by the API.",
+			},
+			"vcpus": schema.Float64Attribute{
+				Computed:            true,
+				MarkdownDescription: "Number of virtual CPUs allocated to the instance.",
+			},
+			"ram": schema.Float64Attribute{
+				Computed:            true,
+				MarkdownDescription: "Amount of RAM allocated to the instance in MB.",
+			},
+			"created_at": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "Timestamp when the instance was created (RFC 3339).",
+			},
+			"private_ipv4": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "Private IPv4 address of the instance.",
+			},
+			"public_ipv4": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "Public IPv4 address of the instance, if assigned.",
+			},
 		},
 	}
 }

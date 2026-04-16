@@ -29,10 +29,12 @@ func (d *regionsDataSource) Metadata(_ context.Context, req datasource.MetadataR
 
 func (d *regionsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		MarkdownDescription: "Lists all regions available to the authenticated workspace.",
 		Attributes: map[string]schema.Attribute{
 			"regions": schema.MapAttribute{
-				Computed:    true,
-				ElementType: types.BoolType,
+				Computed:            true,
+				ElementType:         types.BoolType,
+				MarkdownDescription: "Map of region identifiers to a boolean indicating whether the region is enabled for the workspace.",
 			},
 		},
 	}

@@ -59,54 +59,82 @@ func (r *volumeResource) Metadata(_ context.Context, req resource.MetadataReques
 
 func (r *volumeResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		MarkdownDescription: "Manages a block storage volume. By default, destroying this resource removes it from Terraform state but **does not delete** the underlying volume — set `delete_on_destroy = true` to change this behaviour.",
 		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{Computed: true},
+			"id": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "Unique identifier of the volume.",
+			},
 			"name": schema.StringAttribute{
-				Required: true,
+				Required:            true,
+				MarkdownDescription: "Human-readable name for the volume.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"description": schema.StringAttribute{
-				Optional: true,
+				Optional:            true,
+				MarkdownDescription: "Optional description for the volume.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"size": schema.Int64Attribute{
-				Required: true,
+				Required:            true,
+				MarkdownDescription: "Size of the volume in GB.",
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.RequiresReplace(),
 				},
 			},
 			"volume_type": schema.StringAttribute{
-				Optional: true,
-				Computed: true,
-				Default:  stringdefault.StaticString("standard"),
+				Optional:            true,
+				Computed:            true,
+				Default:             stringdefault.StaticString("standard"),
+				MarkdownDescription: "Storage backend type. Defaults to `standard`.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"region": schema.StringAttribute{
-				Optional: true,
-				Computed: true,
+				Optional:            true,
+				Computed:            true,
+				MarkdownDescription: "Region in which to create the volume. Defaults to the provider-level region.",
 			},
-			"status":   schema.StringAttribute{Computed: true},
-			"bootable": schema.BoolAttribute{Computed: true},
+			"status": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "Current status of the volume (`available`, `in-use`, `error`, etc.).",
+			},
+			"bootable": schema.BoolAttribute{
+				Computed:            true,
+				MarkdownDescription: "Whether the volume is bootable.",
+			},
 			"attachments": schema.ListNestedAttribute{
-				Computed: true,
+				Computed:            true,
+				MarkdownDescription: "List of instances this volume is currently attached to.",
 				PlanModifiers: []planmodifier.List{
 					listplanmodifier.UseStateForUnknown(),
 				},
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
-						"server_id": schema.StringAttribute{Computed: true},
-						"device":    schema.StringAttribute{Computed: true},
+						"server_id": schema.StringAttribute{
+							Computed:            true,
+							MarkdownDescription: "ID of the instance the volume is attached to.",
+						},
+						"device": schema.StringAttribute{
+							Computed:            true,
+							MarkdownDescription: "Device path on the instance (e.g. `/dev/vdb`).",
+						},
 					},
 				},
 			},
-			"created_at": schema.StringAttribute{Computed: true},
-			"updated_at": schema.StringAttribute{Computed: true},
+			"created_at": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "Timestamp when the volume was created (RFC 3339).",
+			},
+			"updated_at": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "Timestamp when the volume was last updated (RFC 3339).",
+			},
 			"delete_on_destroy": schema.BoolAttribute{
 				Optional: true,
 				Computed: true,

@@ -31,22 +31,35 @@ func (d *imagesDataSource) Metadata(_ context.Context, req datasource.MetadataRe
 
 func (d *imagesDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		MarkdownDescription: "Lists all OS images available in a region, grouped by Linux distribution.",
 		Attributes: map[string]schema.Attribute{
 			"region": schema.StringAttribute{
-				Optional: true,
-				Computed: true,
+				Optional:            true,
+				Computed:            true,
+				MarkdownDescription: "Region to query for available images. Defaults to the provider-level region.",
 			},
 			"image_groups": schema.ListNestedAttribute{
-				Computed: true,
+				Computed:            true,
+				MarkdownDescription: "OS images grouped by Linux distribution.",
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
-						"distro": schema.StringAttribute{Computed: true},
+						"distro": schema.StringAttribute{
+							Computed:            true,
+							MarkdownDescription: "Linux distribution name (e.g. `ubuntu`, `debian`, `centos`).",
+						},
 						"versions": schema.ListNestedAttribute{
-							Computed: true,
+							Computed:            true,
+							MarkdownDescription: "Available versions of this distribution.",
 							NestedObject: schema.NestedAttributeObject{
 								Attributes: map[string]schema.Attribute{
-									"id":      schema.StringAttribute{Computed: true},
-									"version": schema.StringAttribute{Computed: true},
+									"id": schema.StringAttribute{
+										Computed:            true,
+										MarkdownDescription: "Unique image ID to use in `flavor_id` or module inputs.",
+									},
+									"version": schema.StringAttribute{
+										Computed:            true,
+										MarkdownDescription: "Human-readable version string (e.g. `22.04`).",
+									},
 								},
 							},
 						},
