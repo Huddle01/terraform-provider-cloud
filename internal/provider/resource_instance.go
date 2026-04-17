@@ -304,13 +304,21 @@ func (r *instanceResource) Read(ctx context.Context, req resource.ReadRequest, r
 		next.PowerState = state.PowerState
 	}
 	next.NetworkID = state.NetworkID
+	// AssignPublicIP, BootDiskSize, KeyNames, SecurityGroupNames are write-only inputs
+	// not returned by the API — preserve from prior state.
 	next.AssignPublicIP = state.AssignPublicIP
 	next.KeyNames = state.KeyNames
 	next.SecurityGroupNames = state.SecurityGroupNames
 	next.Tags = state.Tags
-	next.FlavorID = state.FlavorID
-	next.ImageID = state.ImageID
 	next.BootDiskSize = state.BootDiskSize
+	// FlavorID and ImageID come from the API response; fall back to state only if
+	// the API returned an empty string (e.g. older server versions).
+	if next.FlavorID.ValueString() == "" {
+		next.FlavorID = state.FlavorID
+	}
+	if next.ImageID.ValueString() == "" {
+		next.ImageID = state.ImageID
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, next)...)
 }
@@ -421,6 +429,8 @@ func (r *instanceResource) readInstance(ctx context.Context, id, region string) 
 	model := &instanceResourceModel{
 		ID:          types.StringValue(out.Instance.ID),
 		Name:        types.StringValue(out.Instance.Name),
+		FlavorID:    types.StringValue(out.Instance.FlavorID),
+		ImageID:     types.StringValue(out.Instance.Image.ID),
 		Status:      types.StringValue(out.Instance.Status),
 		VCPUs:       types.Float64Value(out.Instance.VCPUs),
 		RAM:         types.Float64Value(out.Instance.RAM),
