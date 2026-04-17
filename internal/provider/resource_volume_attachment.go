@@ -41,25 +41,35 @@ func (r *volumeAttachmentResource) Metadata(_ context.Context, req resource.Meta
 
 func (r *volumeAttachmentResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		MarkdownDescription: "Attaches a block storage volume to a virtual machine instance.",
 		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{Computed: true},
+			"id": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "Unique identifier of the attachment.",
+			},
 			"volume_id": schema.StringAttribute{
-				Required: true,
+				Required:            true,
+				MarkdownDescription: "ID of the volume to attach.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"instance_id": schema.StringAttribute{
-				Required: true,
+				Required:            true,
+				MarkdownDescription: "ID of the instance to attach the volume to.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"region": schema.StringAttribute{
-				Optional: true,
-				Computed: true,
+				Optional:            true,
+				Computed:            true,
+				MarkdownDescription: "Region of the instance and volume. Defaults to the provider-level region.",
 			},
-			"device": schema.StringAttribute{Computed: true},
+			"device": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "Device path on the instance where the volume is exposed (e.g. `/dev/vdb`). Assigned by the API.",
+			},
 		},
 	}
 }
@@ -111,7 +121,8 @@ func (r *volumeAttachmentResource) Create(ctx context.Context, req resource.Crea
 		if readErr != nil {
 			return false, readErr
 		}
-		return findAttachmentByInstance(refreshed.Attachments, plan.InstanceID.ValueString()) != nil, nil
+		return findAttachmentByInstance(refreshed.Attachments, plan.InstanceID.ValueString()) != nil &&
+			strings.ToLower(refreshed.Status) == "in-use", nil
 	}); err != nil {
 		resp.Diagnostics.AddError("Attach volume timed out", err.Error())
 		return

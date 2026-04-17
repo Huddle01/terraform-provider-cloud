@@ -21,6 +21,7 @@ func TestAccInstance_basic(t *testing.T) {
 	imageID := testAccImageID(t)
 	pubKey := testAccSSHPublicKey()
 	keyName := accName("key")
+	sgName := testAccSGName()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
@@ -28,7 +29,7 @@ func TestAccInstance_basic(t *testing.T) {
 		CheckDestroy:             testAccCheckInstanceDestroyed(region),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccInstanceConfig(name, region, flavorID, imageID, keyName, pubKey),
+				Config: testAccInstanceConfig(name, region, flavorID, imageID, keyName, pubKey, sgName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("huddle_cloud_instance.test", "name", name),
 					resource.TestCheckResourceAttr("huddle_cloud_instance.test", "region", region),
@@ -47,8 +48,14 @@ func TestAccInstance_basic(t *testing.T) {
 				ResourceName:      "huddle_cloud_instance.test",
 				ImportState:       true,
 				ImportStateVerify: true,
-				// power_state is not reliably returned on import refresh.
-				ImportStateVerifyIgnore: []string{"power_state"},
+				// These fields are write-only inputs not returned by the GET API.
+				ImportStateVerifyIgnore: []string{
+					"power_state",
+					"assign_public_ip",
+					"boot_disk_size",
+					"key_names",
+					"security_group_names",
+				},
 			},
 		},
 	})
@@ -75,7 +82,7 @@ func testAccCheckInstanceDestroyed(region string) resource.TestCheckFunc {
 	}
 }
 
-func testAccInstanceConfig(name, region, flavorID, imageID, keyName, pubKey string) string {
+func testAccInstanceConfig(name, region, flavorID, imageID, keyName, pubKey, sgName string) string {
 	return fmt.Sprintf(`
 resource "huddle_cloud_keypair" "test" {
   name       = %q
@@ -83,14 +90,14 @@ resource "huddle_cloud_keypair" "test" {
 }
 
 resource "huddle_cloud_instance" "test" {
-  name             = %q
-  region           = %q
-  flavor_id        = %q
-  image_id         = %q
-  boot_disk_size   = 20
-  key_names        = [huddle_cloud_keypair.test.name]
-  security_group_names = []
-  assign_public_ip = true
+  name                 = %q
+  region               = %q
+  flavor_id            = %q
+  image_id             = %q
+  boot_disk_size       = 20
+  key_names            = [huddle_cloud_keypair.test.name]
+  security_group_names = [%q]
+  assign_public_ip     = true
 }
-`, keyName, pubKey, name, region, flavorID, imageID)
+`, keyName, pubKey, name, region, flavorID, imageID, sgName)
 }

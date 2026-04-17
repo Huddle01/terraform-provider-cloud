@@ -31,21 +31,42 @@ func (d *flavorsDataSource) Metadata(_ context.Context, req datasource.MetadataR
 
 func (d *flavorsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		MarkdownDescription: "Lists all compute flavors (hardware profiles) available in a region.",
 		Attributes: map[string]schema.Attribute{
 			"region": schema.StringAttribute{
-				Optional: true,
-				Computed: true,
+				Optional:            true,
+				Computed:            true,
+				MarkdownDescription: "Region to query for available flavors. Defaults to the provider-level region.",
 			},
 			"flavors": schema.ListNestedAttribute{
-				Computed: true,
+				Computed:            true,
+				MarkdownDescription: "List of available flavors.",
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
-						"id":             schema.StringAttribute{Computed: true},
-						"name":           schema.StringAttribute{Computed: true},
-						"vcpus":          schema.Int64Attribute{Computed: true},
-						"ram":            schema.Int64Attribute{Computed: true},
-						"disk":           schema.Int64Attribute{Computed: true},
-						"price_per_hour": schema.Float64Attribute{Computed: true},
+						"id": schema.StringAttribute{
+							Computed:            true,
+							MarkdownDescription: "Unique identifier of the flavor.",
+						},
+						"name": schema.StringAttribute{
+							Computed:            true,
+							MarkdownDescription: "Human-readable name of the flavor (e.g. `standard-4`).",
+						},
+						"vcpus": schema.Int64Attribute{
+							Computed:            true,
+							MarkdownDescription: "Number of virtual CPUs.",
+						},
+						"ram": schema.Int64Attribute{
+							Computed:            true,
+							MarkdownDescription: "RAM in MB.",
+						},
+						"disk": schema.Int64Attribute{
+							Computed:            true,
+							MarkdownDescription: "Root disk size in GB.",
+						},
+						"price_per_hour": schema.Float64Attribute{
+							Computed:            true,
+							MarkdownDescription: "Hourly price in USD.",
+						},
 					},
 				},
 			},

@@ -37,21 +37,45 @@ func (d *instanceDataSource) Metadata(_ context.Context, req datasource.Metadata
 
 func (d *instanceDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		MarkdownDescription: "Fetches details of an existing virtual machine instance by ID.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Required: true,
+				Required:            true,
+				MarkdownDescription: "ID of the instance to look up.",
 			},
 			"region": schema.StringAttribute{
-				Optional: true,
-				Computed: true,
+				Optional:            true,
+				Computed:            true,
+				MarkdownDescription: "Region where the instance lives. Defaults to the provider-level region.",
 			},
-			"name":         schema.StringAttribute{Computed: true},
-			"status":       schema.StringAttribute{Computed: true},
-			"vcpus":        schema.Float64Attribute{Computed: true},
-			"ram":          schema.Float64Attribute{Computed: true},
-			"created_at":   schema.StringAttribute{Computed: true},
-			"private_ipv4": schema.StringAttribute{Computed: true},
-			"public_ipv4":  schema.StringAttribute{Computed: true},
+			"name": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "Name of the instance.",
+			},
+			"status": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "Current status of the instance.",
+			},
+			"vcpus": schema.Float64Attribute{
+				Computed:            true,
+				MarkdownDescription: "Number of virtual CPUs.",
+			},
+			"ram": schema.Float64Attribute{
+				Computed:            true,
+				MarkdownDescription: "RAM in MB.",
+			},
+			"created_at": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "Timestamp when the instance was created (RFC 3339).",
+			},
+			"private_ipv4": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "Private IPv4 address.",
+			},
+			"public_ipv4": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "Public IPv4 address, if assigned.",
+			},
 		},
 	}
 }

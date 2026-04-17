@@ -32,23 +32,43 @@ func (d *networksDataSource) Metadata(_ context.Context, req datasource.Metadata
 
 func (d *networksDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		MarkdownDescription: "Lists networks accessible to the workspace in a region.",
 		Attributes: map[string]schema.Attribute{
 			"region": schema.StringAttribute{
-				Optional: true,
-				Computed: true,
+				Optional:            true,
+				Computed:            true,
+				MarkdownDescription: "Region to query. Defaults to the provider-level region.",
 			},
 			"owned": schema.BoolAttribute{
-				Optional: true,
+				Optional:            true,
+				MarkdownDescription: "When `true`, only returns networks owned by the workspace. When `false` (default), shared networks are included.",
 			},
 			"networks": schema.ListNestedAttribute{
-				Computed: true,
+				Computed:            true,
+				MarkdownDescription: "List of accessible networks.",
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
-						"id":             schema.StringAttribute{Computed: true},
-						"name":           schema.StringAttribute{Computed: true},
-						"status":         schema.StringAttribute{Computed: true},
-						"subnets":        schema.ListAttribute{Computed: true, ElementType: types.StringType},
-						"admin_state_up": schema.BoolAttribute{Computed: true},
+						"id": schema.StringAttribute{
+							Computed:            true,
+							MarkdownDescription: "Unique identifier of the network.",
+						},
+						"name": schema.StringAttribute{
+							Computed:            true,
+							MarkdownDescription: "Name of the network.",
+						},
+						"status": schema.StringAttribute{
+							Computed:            true,
+							MarkdownDescription: "Current network status (`ACTIVE`, `DOWN`, etc.).",
+						},
+						"subnets": schema.ListAttribute{
+							Computed:            true,
+							ElementType:         types.StringType,
+							MarkdownDescription: "List of subnet IDs associated with the network.",
+						},
+						"admin_state_up": schema.BoolAttribute{
+							Computed:            true,
+							MarkdownDescription: "Whether the network is administratively up.",
+						},
 					},
 				},
 			},

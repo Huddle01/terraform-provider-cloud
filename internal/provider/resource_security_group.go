@@ -54,44 +54,76 @@ func (r *securityGroupResource) Metadata(_ context.Context, req resource.Metadat
 
 func (r *securityGroupResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		MarkdownDescription: "Manages a security group and reads its associated rules. To add rules beyond the defaults, use the `huddle_cloud_security_group_rule` resource.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Computed: true,
+				Computed:            true,
+				MarkdownDescription: "Unique identifier of the security group.",
 			},
 			"name": schema.StringAttribute{
-				Required: true,
+				Required:            true,
+				MarkdownDescription: "Human-readable name for the security group.",
 			},
 			"description": schema.StringAttribute{
-				Optional: true,
+				Optional:            true,
+				MarkdownDescription: "Optional description for the security group.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"region": schema.StringAttribute{
-				Optional: true,
-				Computed: true,
+				Optional:            true,
+				Computed:            true,
+				MarkdownDescription: "Region in which to create the security group. Defaults to the provider-level region.",
 			},
 			"created_at": schema.StringAttribute{
-				Computed: true,
+				Computed:            true,
+				MarkdownDescription: "Timestamp when the security group was created (RFC 3339).",
 			},
 			"updated_at": schema.StringAttribute{
-				Computed: true,
+				Computed:            true,
+				MarkdownDescription: "Timestamp when the security group was last updated (RFC 3339).",
 			},
 			"rules": schema.ListNestedAttribute{
-				Computed: true,
+				Computed:            true,
+				MarkdownDescription: "Read-only list of rules currently attached to this security group.",
 				PlanModifiers: []planmodifier.List{
 					listplanmodifier.UseStateForUnknown(),
 				},
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
-						"id":               schema.StringAttribute{Computed: true},
-						"direction":        schema.StringAttribute{Computed: true},
-						"ether_type":       schema.StringAttribute{Computed: true},
-						"protocol":         schema.StringAttribute{Computed: true},
-						"port_range_min":   schema.Int64Attribute{Computed: true},
-						"port_range_max":   schema.Int64Attribute{Computed: true},
-						"remote_ip_prefix": schema.StringAttribute{Computed: true},
-						"remote_group_id":  schema.StringAttribute{Computed: true},
+						"id": schema.StringAttribute{
+							Computed:            true,
+							MarkdownDescription: "Unique identifier of the rule.",
+						},
+						"direction": schema.StringAttribute{
+							Computed:            true,
+							MarkdownDescription: "Traffic direction: `ingress` or `egress`.",
+						},
+						"ether_type": schema.StringAttribute{
+							Computed:            true,
+							MarkdownDescription: "IP version: `IPv4` or `IPv6`.",
+						},
+						"protocol": schema.StringAttribute{
+							Computed:            true,
+							MarkdownDescription: "IP protocol name (e.g. `tcp`, `udp`, `icmp`). Empty string means all protocols.",
+						},
+						"port_range_min": schema.Int64Attribute{
+							Computed:            true,
+							MarkdownDescription: "Start of the port range (inclusive). `0` means not applicable.",
+						},
+						"port_range_max": schema.Int64Attribute{
+							Computed:            true,
+							MarkdownDescription: "End of the port range (inclusive). `0` means not applicable.",
+						},
+						"remote_ip_prefix": schema.StringAttribute{
+							Computed:            true,
+							MarkdownDescription: "CIDR block that the rule applies to.",
+						},
+						"remote_group_id": schema.StringAttribute{
+							Computed:            true,
+							MarkdownDescription: "ID of a remote security group the rule applies to.",
+						},
 					},
 				},
 			},

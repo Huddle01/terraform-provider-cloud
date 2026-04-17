@@ -50,18 +50,22 @@ func (r *securityGroupRuleResource) Metadata(_ context.Context, req resource.Met
 
 func (r *securityGroupRuleResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		MarkdownDescription: "Adds an ingress or egress rule to an existing security group.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Computed: true,
+				Computed:            true,
+				MarkdownDescription: "Unique identifier of the security group rule.",
 			},
 			"security_group_id": schema.StringAttribute{
-				Required: true,
+				Required:            true,
+				MarkdownDescription: "ID of the security group to add this rule to.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"direction": schema.StringAttribute{
-				Required: true,
+				Required:            true,
+				MarkdownDescription: "Traffic direction: `ingress` or `egress`.",
 				Validators: []validator.String{
 					stringvalidator.OneOf("ingress", "egress"),
 				},
@@ -70,7 +74,8 @@ func (r *securityGroupRuleResource) Schema(_ context.Context, _ resource.SchemaR
 				},
 			},
 			"ether_type": schema.StringAttribute{
-				Required: true,
+				Required:            true,
+				MarkdownDescription: "IP version the rule applies to: `IPv4` or `IPv6`. Defaults to `IPv4`.",
 				Validators: []validator.String{
 					stringvalidator.OneOf("IPv4", "IPv6"),
 				},
@@ -79,41 +84,48 @@ func (r *securityGroupRuleResource) Schema(_ context.Context, _ resource.SchemaR
 				},
 			},
 			"protocol": schema.StringAttribute{
-				Optional: true,
+				Optional:            true,
+				MarkdownDescription: "IP protocol for the rule (e.g. `tcp`, `udp`, `icmp`). Omit to match all protocols.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"port_range_min": schema.Int64Attribute{
-				Optional: true,
+				Optional:            true,
+				MarkdownDescription: "Start of the permitted port range (inclusive).",
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.RequiresReplace(),
 				},
 			},
 			"port_range_max": schema.Int64Attribute{
-				Optional: true,
+				Optional:            true,
+				MarkdownDescription: "End of the permitted port range (inclusive).",
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.RequiresReplace(),
 				},
 			},
 			"remote_ip_prefix": schema.StringAttribute{
-				Optional: true,
+				Optional:            true,
+				MarkdownDescription: "CIDR block that this rule permits traffic from/to.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"remote_group_id": schema.StringAttribute{
-				Optional: true,
+				Optional:            true,
+				MarkdownDescription: "ID of a remote security group that this rule permits traffic from/to.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"region": schema.StringAttribute{
-				Optional: true,
-				Computed: true,
+				Optional:            true,
+				Computed:            true,
+				MarkdownDescription: "Region of the security group. Defaults to the provider-level region.",
 			},
 			"created_at": schema.StringAttribute{
-				Computed: true,
+				Computed:            true,
+				MarkdownDescription: "Timestamp when the rule was created (RFC 3339).",
 			},
 		},
 	}

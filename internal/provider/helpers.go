@@ -89,6 +89,29 @@ func waitForInstanceStatus(ctx context.Context, client *apiClient, instanceID st
 	})
 }
 
+// waitForFloatingIP polls until the instance has a non-empty public IPv4
+// address. This is needed because floating IP assignment is asynchronous in
+// OpenStack: the instance reaches ACTIVE before the association completes,
+// so reading state immediately after ACTIVE may return an empty public_ipv4.
+// The wait is best-effort — a warning is surfaced on timeout rather than
+// failing the resource, since the instance is still usable without a public IP.
+func waitForFloatingIP(ctx context.Context, client *apiClient, instanceID string, region string) (string, error) {
+	var publicIP string
+	err := waitForCondition(ctx, 3*time.Minute, 5*time.Second, func(c context.Context) (bool, error) {
+		var payload instanceResponseEnvelope
+		if err := client.get(c, "/instances/"+url.PathEscape(instanceID), queryWithRegion(region), &payload); err != nil {
+			return false, err
+		}
+		_, pub := extractIPv4(payload.Instance.Networks)
+		if pub != "" {
+			publicIP = pub
+			return true, nil
+		}
+		return false, nil
+	})
+	return publicIP, err
+}
+
 func waitForVolumeDeleted(ctx context.Context, client *apiClient, volumeID string, region string, timeout time.Duration) error {
 	return waitForCondition(ctx, timeout, 2*time.Second, func(c context.Context) (bool, error) {
 		var payload volumeDetailEnvelope
