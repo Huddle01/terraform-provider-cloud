@@ -224,6 +224,19 @@ func (r *instanceResource) Create(ctx context.Context, req resource.CreateReques
 		return
 	}
 
+	// Floating IP assignment is asynchronous — the instance reaches ACTIVE
+	// before the association completes. Poll until public_ipv4 is populated so
+	// Terraform state reflects the correct value immediately after create.
+	if boolOrDefault(originalPlan.AssignPublicIP, true) {
+		if _, err := waitForFloatingIP(ctx, r.client, instanceID, region); err != nil {
+			resp.Diagnostics.AddWarning(
+				"Floating IP not assigned in time",
+				"Instance is ACTIVE but public_ipv4 was not populated within 3 minutes. "+
+					"It may appear in state after the next refresh.",
+			)
+		}
+	}
+
 	finalState, err := r.readInstance(ctx, instanceID, region)
 	if err != nil {
 		resp.Diagnostics.AddError("Read instance after create failed", describeAPIError(err))
