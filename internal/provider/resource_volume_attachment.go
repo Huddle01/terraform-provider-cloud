@@ -121,7 +121,8 @@ func (r *volumeAttachmentResource) Create(ctx context.Context, req resource.Crea
 		if readErr != nil {
 			return false, readErr
 		}
-		return findAttachmentByInstance(refreshed.Attachments, plan.InstanceID.ValueString()) != nil, nil
+		return findAttachmentByInstance(refreshed.Attachments, plan.InstanceID.ValueString()) != nil &&
+			strings.ToLower(refreshed.Status) == "in-use", nil
 	}); err != nil {
 		resp.Diagnostics.AddError("Attach volume timed out", err.Error())
 		return
