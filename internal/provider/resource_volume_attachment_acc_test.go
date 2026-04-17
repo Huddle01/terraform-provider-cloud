@@ -22,6 +22,7 @@ func TestAccVolumeAttachment_basic(t *testing.T) {
 	keyName := accName("key")
 	vmName := accName("vm")
 	volName := accName("vol")
+	sgName := testAccSGName()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
@@ -29,15 +30,17 @@ func TestAccVolumeAttachment_basic(t *testing.T) {
 		CheckDestroy:             testAccCheckAttachmentAndVolumeDestroyed(region),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccVolumeAttachmentConfig(keyName, vmName, volName, region, flavorID, imageID, pubKey),
+				Config: testAccVolumeAttachmentConfig(keyName, vmName, volName, region, flavorID, imageID, pubKey, sgName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("huddle_cloud_volume_attachment.test", "id"),
 					resource.TestCheckResourceAttrSet("huddle_cloud_volume_attachment.test", "volume_id"),
 					resource.TestCheckResourceAttrSet("huddle_cloud_volume_attachment.test", "instance_id"),
 					resource.TestCheckResourceAttr("huddle_cloud_volume_attachment.test", "region", region),
 					resource.TestCheckResourceAttrSet("huddle_cloud_volume_attachment.test", "device"),
-					// Volume status should be in-use while attached.
-					resource.TestCheckResourceAttr("huddle_cloud_volume.test", "status", "in-use"),
+					// Note: huddle_cloud_volume.test.status is intentionally not checked here.
+					// Terraform does not re-read the volume resource after the attachment
+					// changes OpenStack's underlying status to "in-use", so the state
+					// would reflect the stale "available" value from creation time.
 				),
 			},
 			// Import the attachment by "volume_id/instance_id".
@@ -84,7 +87,7 @@ func testAccCheckAttachmentAndVolumeDestroyed(region string) resource.TestCheckF
 	}
 }
 
-func testAccVolumeAttachmentConfig(keyName, vmName, volName, region, flavorID, imageID, pubKey string) string {
+func testAccVolumeAttachmentConfig(keyName, vmName, volName, region, flavorID, imageID, pubKey, sgName string) string {
 	return fmt.Sprintf(`
 resource "huddle_cloud_keypair" "test" {
   name       = %q
@@ -98,7 +101,7 @@ resource "huddle_cloud_instance" "test" {
   image_id             = %q
   boot_disk_size       = 20
   key_names            = [huddle_cloud_keypair.test.name]
-  security_group_names = []
+  security_group_names = [%q]
   assign_public_ip     = true
 }
 
@@ -115,7 +118,7 @@ resource "huddle_cloud_volume_attachment" "test" {
   region      = %q
 }
 `, keyName, pubKey,
-		vmName, region, flavorID, imageID,
+		vmName, region, flavorID, imageID, sgName,
 		volName, region,
 		region)
 }

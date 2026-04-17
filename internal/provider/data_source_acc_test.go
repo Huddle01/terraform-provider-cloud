@@ -99,13 +99,14 @@ func TestAccDataSourceInstance(t *testing.T) {
 	pubKey := testAccSSHPublicKey()
 	keyName := accName("key")
 	vmName := accName("vm")
+	sgName := testAccSGName()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceInstanceConfig(keyName, vmName, region, flavorID, imageID, pubKey),
+				Config: testAccDataSourceInstanceConfig(keyName, vmName, region, flavorID, imageID, pubKey, sgName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
 						"data.huddle_cloud_instance.test", "id",
@@ -145,7 +146,7 @@ data "huddle_cloud_networks" "test" {
 `, region)
 }
 
-func testAccDataSourceInstanceConfig(keyName, vmName, region, flavorID, imageID, pubKey string) string {
+func testAccDataSourceInstanceConfig(keyName, vmName, region, flavorID, imageID, pubKey, sgName string) string {
 	return fmt.Sprintf(`
 resource "huddle_cloud_keypair" "test" {
   name       = %q
@@ -159,7 +160,7 @@ resource "huddle_cloud_instance" "test" {
   image_id             = %q
   boot_disk_size       = 20
   key_names            = [huddle_cloud_keypair.test.name]
-  security_group_names = []
+  security_group_names = [%q]
   assign_public_ip     = true
 }
 
@@ -167,5 +168,5 @@ data "huddle_cloud_instance" "test" {
   id     = huddle_cloud_instance.test.id
   region = %q
 }
-`, keyName, pubKey, vmName, region, flavorID, imageID, region)
+`, keyName, pubKey, vmName, region, flavorID, imageID, sgName, region)
 }

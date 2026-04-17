@@ -73,6 +73,15 @@ func testAccImageID(t *testing.T) string {
 	return v
 }
 
+// testAccSGName returns the security group name to use for instance tests.
+// Set HUDDLE_SG_NAME to override; defaults to "default".
+func testAccSGName() string {
+	if v := os.Getenv("HUDDLE_SG_NAME"); v != "" {
+		return v
+	}
+	return "default"
+}
+
 // testAccSSHPublicKey returns an SSH public key for acceptance tests.
 // Set HUDDLE_SSH_PUBLIC_KEY to use a real key.
 func testAccSSHPublicKey() string {
