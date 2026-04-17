@@ -94,7 +94,7 @@ func (p *huddleProvider) Configure(ctx context.Context, req provider.ConfigureRe
 		)
 	}
 
-	baseURL := stringOrDefault(config.BaseURL, "https://cloud.huddleapis.com/api/v1")
+	baseURL := stringOrEnvOrDefault(config.BaseURL, "HUDDLE_BASE_URL", "https://cloud.huddleapis.com/api/v1")
 	timeoutSec := int64OrDefault(config.RequestTimeoutSeconds, 60)
 	if timeoutSec <= 0 {
 		resp.Diagnostics.AddAttributeError(
@@ -154,6 +154,18 @@ func stringOrEnv(value types.String, key string) string {
 func stringOrDefault(value types.String, fallback string) string {
 	if !value.IsNull() && !value.IsUnknown() {
 		return value.ValueString()
+	}
+	return fallback
+}
+
+// stringOrEnvOrDefault resolves a provider string attribute by preferring the
+// explicit config value, then the named environment variable, then the fallback.
+func stringOrEnvOrDefault(value types.String, key, fallback string) string {
+	if !value.IsNull() && !value.IsUnknown() {
+		return value.ValueString()
+	}
+	if v := os.Getenv(key); v != "" {
+		return v
 	}
 	return fallback
 }
