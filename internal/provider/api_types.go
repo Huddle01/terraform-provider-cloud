@@ -14,16 +14,16 @@ type instanceResponseEnvelope struct {
 }
 
 type instancePayload struct {
-	ID        string           `json:"id"`
-	Name      string           `json:"name"`
-	FlavorName string          `json:"flavor"`
-	VCPUs     float64          `json:"vcpus"`
-	RAM       float64          `json:"ram"`
-	Status    string           `json:"status"`
-	CreatedAt string           `json:"created_at"`
-	Region    regionRef        `json:"region"`
-	Networks  instanceNetworks `json:"networks"`
-	Image struct {
+	ID         string           `json:"id"`
+	Name       string           `json:"name"`
+	FlavorName string           `json:"flavor"`
+	VCPUs      float64          `json:"vcpus"`
+	RAM        float64          `json:"ram"`
+	Status     string           `json:"status"`
+	CreatedAt  string           `json:"created_at"`
+	Region     regionRef        `json:"region"`
+	Networks   instanceNetworks `json:"networks"`
+	Image      struct {
 		ID   string `json:"id"`
 		Name string `json:"name"`
 	} `json:"image"`
