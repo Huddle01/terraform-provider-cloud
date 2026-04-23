@@ -48,8 +48,8 @@ resource "huddle_cloud_security_group_rule" "ssh" {
 resource "huddle_cloud_instance" "example" {
   name                 = "tf-minimal-vm"
   region               = var.region
-  flavor_id            = var.flavor_id
-  image_id             = var.image_id
+  flavor_name          = var.flavor_name
+  image_name           = var.image_name
   boot_disk_size       = 30
   key_names            = [huddle_cloud_keypair.example.name]
   security_group_names = [huddle_cloud_security_group.example.name]
@@ -62,8 +62,8 @@ resource "huddle_cloud_instance" "example" {
 ### Required
 
 - `boot_disk_size` (Number) Size of the boot disk in GB. Defaults to `30`.
-- `flavor_id` (String) ID of the flavor (hardware profile) to use. Use the `huddle_cloud_flavors` data source to list available flavors.
-- `image_id` (String) ID of the OS image to boot from. Use the `huddle_cloud_images` data source to list available images.
+- `flavor_name` (String) Name of the flavor (hardware profile) to use (e.g. `anton-2`, `anton-4`). Use the `huddle_cloud_flavors` data source to list available flavors.
+- `image_name` (String) Name of the OS image to boot from (e.g. `ubuntu-22.04`). Use the `huddle_cloud_images` data source to list available images.
 - `key_names` (List of String) List of keypair names to inject into the instance for SSH access.
 - `name` (String) Human-readable name for the instance.
 - `security_group_names` (List of String) List of security group names to attach to the instance.

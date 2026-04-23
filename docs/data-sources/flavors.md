@@ -15,15 +15,15 @@ data "huddle_cloud_flavors" "eu2" {
   region = "eu2"
 }
 
-# Pick the first available flavor
+# Pick the first available flavor by name
 locals {
-  flavor_id = data.huddle_cloud_flavors.eu2.flavors[0].id
+  flavor_name = data.huddle_cloud_flavors.eu2.flavors[0].name
 }
 
 resource "huddle_cloud_instance" "example" {
   name                 = "my-vm"
   region               = "eu2"
-  flavor_id            = local.flavor_id
+  flavor_name          = local.flavor_name
   image_id             = var.image_id
   boot_disk_size       = 30
   key_names            = [huddle_cloud_keypair.example.name]

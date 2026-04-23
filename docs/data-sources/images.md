@@ -49,5 +49,6 @@ locals {
 - `image_groups` (List of Object) OS images grouped by Linux distribution. Each object has the following attributes:
   - `distro` (String) Linux distribution name (e.g. `ubuntu`, `debian`, `centos`).
   - `versions` (List of Object) Available versions of this distribution. Each object has:
-    - `id` (String) Unique image ID to use in `flavor_id` or module inputs.
+    - `id` (String) Unique image identifier (internal UUID).
+    - `name` (String) Human-readable image name to use in `image_name` resource/module inputs (e.g. `ubuntu-22.04`).
     - `version` (String) Human-readable version string (e.g. `22.04`).

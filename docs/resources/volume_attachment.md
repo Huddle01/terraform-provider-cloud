@@ -20,8 +20,8 @@ resource "huddle_cloud_volume" "data" {
 resource "huddle_cloud_instance" "app" {
   name                 = "my-app-server"
   region               = "eu2"
-  flavor_id            = var.flavor_id
-  image_id             = var.image_id
+  flavor_name          = var.flavor_name
+  image_name           = var.image_name
   boot_disk_size       = 30
   key_names            = [huddle_cloud_keypair.example.name]
   security_group_names = [huddle_cloud_security_group.example.name]

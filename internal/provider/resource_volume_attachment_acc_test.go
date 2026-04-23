@@ -13,11 +13,11 @@ import (
 // verifies the attachment attributes, tests import, and exercises the full destroy
 // sequence — which also validates the detach-before-delete race condition fix.
 //
-// Requires env vars: HUDDLE_FLAVOR_ID, HUDDLE_IMAGE_ID
+// Requires env vars: HUDDLE_FLAVOR_NAME, HUDDLE_IMAGE_NAME
 func TestAccVolumeAttachment_basic(t *testing.T) {
 	region := testAccRegion()
-	flavorID := testAccFlavorID(t)
-	imageID := testAccImageID(t)
+	flavorName := testAccFlavorName(t)
+	imageName := testAccImageName(t)
 	pubKey := testAccSSHPublicKey()
 	keyName := accName("key")
 	vmName := accName("vm")
@@ -30,7 +30,7 @@ func TestAccVolumeAttachment_basic(t *testing.T) {
 		CheckDestroy:             testAccCheckAttachmentAndVolumeDestroyed(region),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccVolumeAttachmentConfig(keyName, vmName, volName, region, flavorID, imageID, pubKey, sgName),
+				Config: testAccVolumeAttachmentConfig(keyName, vmName, volName, region, flavorName, imageName, pubKey, sgName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("huddle_cloud_volume_attachment.test", "id"),
 					resource.TestCheckResourceAttrSet("huddle_cloud_volume_attachment.test", "volume_id"),
@@ -87,7 +87,7 @@ func testAccCheckAttachmentAndVolumeDestroyed(region string) resource.TestCheckF
 	}
 }
 
-func testAccVolumeAttachmentConfig(keyName, vmName, volName, region, flavorID, imageID, pubKey, sgName string) string {
+func testAccVolumeAttachmentConfig(keyName, vmName, volName, region, flavorName, imageName, pubKey, sgName string) string {
 	return fmt.Sprintf(`
 resource "huddle_cloud_keypair" "test" {
   name       = %q
@@ -97,8 +97,8 @@ resource "huddle_cloud_keypair" "test" {
 resource "huddle_cloud_instance" "test" {
   name                 = %q
   region               = %q
-  flavor_id            = %q
-  image_id             = %q
+  flavor_name          = %q
+  image_name           = %q
   boot_disk_size       = 20
   key_names            = [huddle_cloud_keypair.test.name]
   security_group_names = [%q]
@@ -118,7 +118,7 @@ resource "huddle_cloud_volume_attachment" "test" {
   region      = %q
 }
 `, keyName, pubKey,
-		vmName, region, flavorID, imageID, sgName,
+		vmName, region, flavorName, imageName, sgName,
 		volName, region,
 		region)
 }

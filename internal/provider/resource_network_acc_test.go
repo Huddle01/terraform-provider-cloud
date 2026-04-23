@@ -78,8 +78,10 @@ func testAccCheckNetworkDestroyed(s *terraform.State) error {
 func testAccNetworkConfig(name, region string) string {
 	return fmt.Sprintf(`
 resource "huddle_cloud_network" "test" {
-  name   = %q
-  region = %q
+  name                = %q
+  region              = %q
+  pool_cidr           = "10.200.0.0/16"
+  primary_subnet_cidr = "10.200.1.0/24"
 }
 `, name, region)
 }
