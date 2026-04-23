@@ -54,7 +54,7 @@ func (d *imagesDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 								Attributes: map[string]schema.Attribute{
 									"id": schema.StringAttribute{
 										Computed:            true,
-										MarkdownDescription: "Unique image ID to use in `flavor_id` or module inputs.",
+										MarkdownDescription: "Unique image ID to use in `image_id` module inputs.",
 									},
 									"version": schema.StringAttribute{
 										Computed:            true,

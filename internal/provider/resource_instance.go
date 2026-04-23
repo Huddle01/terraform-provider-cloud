@@ -30,8 +30,8 @@ type instanceResource struct {
 type instanceResourceModel struct {
 	ID                 types.String  `tfsdk:"id"`
 	Name               types.String  `tfsdk:"name"`
-	FlavorID           types.String  `tfsdk:"flavor_id"`
-	ImageID            types.String  `tfsdk:"image_id"`
+	FlavorName         types.String  `tfsdk:"flavor_name"`
+	ImageName          types.String  `tfsdk:"image_name"`
 	BootDiskSize       types.Int64   `tfsdk:"boot_disk_size"`
 	KeyNames           types.List    `tfsdk:"key_names"`
 	SecurityGroupNames types.List    `tfsdk:"security_group_names"`
@@ -69,14 +69,14 @@ func (r *instanceResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 				MarkdownDescription: "Human-readable name for the instance.",
 				PlanModifiers:       []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
-			"flavor_id": schema.StringAttribute{
+			"flavor_name": schema.StringAttribute{
 				Required:            true,
-				MarkdownDescription: "ID of the flavor (hardware profile) to use. Use the `huddle_cloud_flavors` data source to list available flavors.",
+				MarkdownDescription: "Name of the flavor (hardware profile) to use (e.g. `anton-2`, `anton-4`). Use the `huddle_cloud_flavors` data source to list available flavors.",
 				PlanModifiers:       []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
-			"image_id": schema.StringAttribute{
+			"image_name": schema.StringAttribute{
 				Required:            true,
-				MarkdownDescription: "ID of the OS image to boot from. Use the `huddle_cloud_images` data source to list available images.",
+				MarkdownDescription: "Name of the OS image to boot from (e.g. `ubuntu-22.04`). Use the `huddle_cloud_images` data source to list available images.",
 				PlanModifiers:       []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"boot_disk_size": schema.Int64Attribute{
@@ -186,8 +186,8 @@ func (r *instanceResource) Create(ctx context.Context, req resource.CreateReques
 
 	body := map[string]any{
 		"name":             plan.Name.ValueString(),
-		"flavor_id":        plan.FlavorID.ValueString(),
-		"image_id":         plan.ImageID.ValueString(),
+		"flavor_name":      plan.FlavorName.ValueString(),
+		"image_name":       plan.ImageName.ValueString(),
 		"boot_disk_size":   plan.BootDiskSize.ValueInt64(),
 		"key_name":         listStringToSlice(plan.KeyNames),
 		"sg_names":         listStringToSlice(plan.SecurityGroupNames),
@@ -244,8 +244,8 @@ func (r *instanceResource) Create(ctx context.Context, req resource.CreateReques
 	}
 
 	plan = *finalState
-	plan.FlavorID = originalPlan.FlavorID
-	plan.ImageID = originalPlan.ImageID
+	plan.FlavorName = originalPlan.FlavorName
+	plan.ImageName = originalPlan.ImageName
 	plan.BootDiskSize = originalPlan.BootDiskSize
 	plan.KeyNames = originalPlan.KeyNames
 	plan.SecurityGroupNames = originalPlan.SecurityGroupNames
@@ -272,8 +272,8 @@ func (r *instanceResource) Create(ctx context.Context, req resource.CreateReques
 			return
 		}
 		plan = *finalState
-		plan.FlavorID = originalPlan.FlavorID
-		plan.ImageID = originalPlan.ImageID
+		plan.FlavorName = originalPlan.FlavorName
+		plan.ImageName = originalPlan.ImageName
 		plan.BootDiskSize = originalPlan.BootDiskSize
 		plan.KeyNames = originalPlan.KeyNames
 		plan.SecurityGroupNames = originalPlan.SecurityGroupNames
@@ -324,13 +324,13 @@ func (r *instanceResource) Read(ctx context.Context, req resource.ReadRequest, r
 	next.SecurityGroupNames = state.SecurityGroupNames
 	next.Tags = state.Tags
 	next.BootDiskSize = state.BootDiskSize
-	// FlavorID and ImageID come from the API response; fall back to state only if
+	// FlavorName and ImageName come from the API response; fall back to state only if
 	// the API returned an empty string (e.g. older server versions).
-	if next.FlavorID.ValueString() == "" {
-		next.FlavorID = state.FlavorID
+	if next.FlavorName.ValueString() == "" {
+		next.FlavorName = state.FlavorName
 	}
-	if next.ImageID.ValueString() == "" {
-		next.ImageID = state.ImageID
+	if next.ImageName.ValueString() == "" {
+		next.ImageName = state.ImageName
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, next)...)
@@ -380,8 +380,8 @@ func (r *instanceResource) Update(ctx context.Context, req resource.UpdateReques
 	updated.KeyNames = state.KeyNames
 	updated.SecurityGroupNames = state.SecurityGroupNames
 	updated.Tags = state.Tags
-	updated.FlavorID = state.FlavorID
-	updated.ImageID = state.ImageID
+	updated.FlavorName = state.FlavorName
+	updated.ImageName = state.ImageName
 	updated.BootDiskSize = state.BootDiskSize
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, updated)...)
@@ -442,8 +442,8 @@ func (r *instanceResource) readInstance(ctx context.Context, id, region string) 
 	model := &instanceResourceModel{
 		ID:          types.StringValue(out.Instance.ID),
 		Name:        types.StringValue(out.Instance.Name),
-		FlavorID:    types.StringValue(out.Instance.FlavorID),
-		ImageID:     types.StringValue(out.Instance.Image.ID),
+		FlavorName:  types.StringValue(out.Instance.FlavorName),
+		ImageName:   types.StringValue(out.Instance.Image.Name),
 		Status:      types.StringValue(out.Instance.Status),
 		VCPUs:       types.Float64Value(out.Instance.VCPUs),
 		RAM:         types.Float64Value(out.Instance.RAM),

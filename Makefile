@@ -1,5 +1,13 @@
 .PHONY: fmt test test-acceptance build install-local dev-override
 
+# Load credentials from .env.acceptance when it exists (file is gitignored).
+# Copy .env.acceptance.example → .env.acceptance and fill in your values.
+# Any variable set in the shell already takes precedence (Make ?= semantics do
+# not apply here, but the shell export wins over the file for child processes).
+ENV_FILE ?= .env.acceptance
+-include $(ENV_FILE)
+export
+
 VERSION ?= 0.1.0
 OS_ARCH := $(shell go env GOOS)_$(shell go env GOARCH)
 LOCAL_PLUGIN_DIR := $(HOME)/.terraform.d/plugins/registry.terraform.io/huddle01/cloud/$(VERSION)/$(OS_ARCH)
@@ -17,11 +25,12 @@ test:
 	go test ./...
 
 # test-acceptance runs end-to-end tests against a real Huddle API.
-# Required env vars: HUDDLE_API_KEY, HUDDLE_REGION
-# Instance/attachment tests also need: HUDDLE_FLAVOR_ID, HUDDLE_IMAGE_ID
-# Optional: HUDDLE_BASE_URL, HUDDLE_SSH_PUBLIC_KEY
+# Credentials are loaded from .env.acceptance automatically (see top of file).
+# Required env vars: HUDDLE_API_KEY, HUDDLE_REGION, HUDDLE_FLAVOR_NAME, HUDDLE_IMAGE_NAME
+# Optional: HUDDLE_LOCAL_BASE_URL, HUDDLE_SSH_PUBLIC_KEY
+# -count=1 disables Go's test result cache so tests always run against live infra.
 test-acceptance:
-	TF_ACC=1 go test ./... -run TestAcc -v -timeout 30m
+	TF_ACC=1 go test ./... -run TestAcc -v -count=1 -timeout 30m
 
 build:
 	go build ./...

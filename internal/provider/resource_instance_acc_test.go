@@ -12,13 +12,13 @@ import (
 // TestAccInstance_basic provisions a real instance, verifies key attributes,
 // tests import, and confirms the instance is deleted on destroy.
 //
-// Requires env vars: HUDDLE_FLAVOR_ID, HUDDLE_IMAGE_ID
+// Requires env vars: HUDDLE_FLAVOR_NAME, HUDDLE_IMAGE_NAME
 // Optional: HUDDLE_SSH_PUBLIC_KEY
 func TestAccInstance_basic(t *testing.T) {
 	name := accName("vm")
 	region := testAccRegion()
-	flavorID := testAccFlavorID(t)
-	imageID := testAccImageID(t)
+	flavorName := testAccFlavorName(t)
+	imageName := testAccImageName(t)
 	pubKey := testAccSSHPublicKey()
 	keyName := accName("key")
 	sgName := testAccSGName()
@@ -29,12 +29,12 @@ func TestAccInstance_basic(t *testing.T) {
 		CheckDestroy:             testAccCheckInstanceDestroyed(region),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccInstanceConfig(name, region, flavorID, imageID, keyName, pubKey, sgName),
+				Config: testAccInstanceConfig(name, region, flavorName, imageName, keyName, pubKey, sgName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("huddle_cloud_instance.test", "name", name),
 					resource.TestCheckResourceAttr("huddle_cloud_instance.test", "region", region),
-					resource.TestCheckResourceAttr("huddle_cloud_instance.test", "flavor_id", flavorID),
-					resource.TestCheckResourceAttr("huddle_cloud_instance.test", "image_id", imageID),
+					resource.TestCheckResourceAttr("huddle_cloud_instance.test", "flavor_name", flavorName),
+					resource.TestCheckResourceAttr("huddle_cloud_instance.test", "image_name", imageName),
 					resource.TestCheckResourceAttr("huddle_cloud_instance.test", "status", "ACTIVE"),
 					resource.TestCheckResourceAttrSet("huddle_cloud_instance.test", "id"),
 					resource.TestCheckResourceAttrSet("huddle_cloud_instance.test", "public_ipv4"),
@@ -82,7 +82,7 @@ func testAccCheckInstanceDestroyed(region string) resource.TestCheckFunc {
 	}
 }
 
-func testAccInstanceConfig(name, region, flavorID, imageID, keyName, pubKey, sgName string) string {
+func testAccInstanceConfig(name, region, flavorName, imageName, keyName, pubKey, sgName string) string {
 	return fmt.Sprintf(`
 resource "huddle_cloud_keypair" "test" {
   name       = %q
@@ -92,12 +92,12 @@ resource "huddle_cloud_keypair" "test" {
 resource "huddle_cloud_instance" "test" {
   name                 = %q
   region               = %q
-  flavor_id            = %q
-  image_id             = %q
+  flavor_name          = %q
+  image_name           = %q
   boot_disk_size       = 20
   key_names            = [huddle_cloud_keypair.test.name]
   security_group_names = [%q]
   assign_public_ip     = true
 }
-`, keyName, pubKey, name, region, flavorID, imageID, sgName)
+`, keyName, pubKey, name, region, flavorName, imageName, sgName)
 }

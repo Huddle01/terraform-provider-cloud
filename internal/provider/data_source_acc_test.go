@@ -90,12 +90,12 @@ func TestAccDataSourceNetworks(t *testing.T) {
 }
 
 // TestAccDataSourceInstance looks up an existing instance by ID.
-// Requires HUDDLE_FLAVOR_ID and HUDDLE_IMAGE_ID to create a transient instance
+// Requires HUDDLE_FLAVOR_NAME and HUDDLE_IMAGE_NAME to create a transient instance
 // whose ID is then looked up via the data source.
 func TestAccDataSourceInstance(t *testing.T) {
 	region := testAccRegion()
-	flavorID := testAccFlavorID(t)
-	imageID := testAccImageID(t)
+	flavorName := testAccFlavorName(t)
+	imageName := testAccImageName(t)
 	pubKey := testAccSSHPublicKey()
 	keyName := accName("key")
 	vmName := accName("vm")
@@ -106,7 +106,7 @@ func TestAccDataSourceInstance(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceInstanceConfig(keyName, vmName, region, flavorID, imageID, pubKey, sgName),
+				Config: testAccDataSourceInstanceConfig(keyName, vmName, region, flavorName, imageName, pubKey, sgName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
 						"data.huddle_cloud_instance.test", "id",
@@ -146,7 +146,7 @@ data "huddle_cloud_networks" "test" {
 `, region)
 }
 
-func testAccDataSourceInstanceConfig(keyName, vmName, region, flavorID, imageID, pubKey, sgName string) string {
+func testAccDataSourceInstanceConfig(keyName, vmName, region, flavorName, imageName, pubKey, sgName string) string {
 	return fmt.Sprintf(`
 resource "huddle_cloud_keypair" "test" {
   name       = %q
@@ -156,8 +156,8 @@ resource "huddle_cloud_keypair" "test" {
 resource "huddle_cloud_instance" "test" {
   name                 = %q
   region               = %q
-  flavor_id            = %q
-  image_id             = %q
+  flavor_name          = %q
+  image_name           = %q
   boot_disk_size       = 20
   key_names            = [huddle_cloud_keypair.test.name]
   security_group_names = [%q]
@@ -168,5 +168,5 @@ data "huddle_cloud_instance" "test" {
   id     = huddle_cloud_instance.test.id
   region = %q
 }
-`, keyName, pubKey, vmName, region, flavorID, imageID, sgName, region)
+`, keyName, pubKey, vmName, region, flavorName, imageName, sgName, region)
 }

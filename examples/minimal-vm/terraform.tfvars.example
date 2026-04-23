@@ -1,5 +1,5 @@
 region         = "bom2"
-flavor_id      = "10"
+flavor_name    = "anton-2"
 image_id       = "4aa36c63-bb68-4f25-a09d-5105ba25377f"
 ssh_public_key = ""
 huddle_api_key = ""

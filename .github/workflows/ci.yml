@@ -107,8 +107,8 @@ jobs:
           HUDDLE_REGION: ${{ secrets.HUDDLE_REGION }}
           HUDDLE_BASE_URL: ${{ secrets.HUDDLE_BASE_URL }}
           HUDDLE_SSH_PUBLIC_KEY: ${{ secrets.HUDDLE_SSH_PUBLIC_KEY }}
-          HUDDLE_FLAVOR_ID: ${{ secrets.HUDDLE_FLAVOR_ID }}
-          HUDDLE_IMAGE_ID: ${{ secrets.HUDDLE_IMAGE_ID }}
+          HUDDLE_FLAVOR_NAME: ${{ secrets.HUDDLE_FLAVOR_NAME }}
+          HUDDLE_IMAGE_NAME: ${{ secrets.HUDDLE_IMAGE_NAME }}
         run: go test ./... -run TestAcc -v -timeout 30m
 
       - name: Remove trigger label

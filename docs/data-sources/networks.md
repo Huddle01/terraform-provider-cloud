@@ -30,8 +30,8 @@ locals {
 resource "huddle_cloud_instance" "example" {
   name                 = "my-vm"
   region               = "eu2"
-  flavor_id            = var.flavor_id
-  image_id             = var.image_id
+  flavor_name          = var.flavor_name
+  image_name           = var.image_name
   boot_disk_size       = 30
   network_id           = local.network_id
   key_names            = [huddle_cloud_keypair.example.name]

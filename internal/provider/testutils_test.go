@@ -34,7 +34,10 @@ func accName(base string) string {
 
 // testAccClient builds an apiClient from test env vars for use in CheckDestroy helpers.
 func testAccClient() *apiClient {
-	baseURL := os.Getenv("HUDDLE_BASE_URL")
+	baseURL := os.Getenv("HUDDLE_LOCAL_BASE_URL")
+	if baseURL == "" {
+		baseURL = os.Getenv("HUDDLE_BASE_URL") // legacy fallback
+	}
 	if baseURL == "" {
 		baseURL = "https://cloud.huddleapis.com/api/v1"
 	}
@@ -51,24 +54,24 @@ func testAccRegion() string {
 	return os.Getenv("HUDDLE_REGION")
 }
 
-// testAccFlavorID returns the flavor ID to use for instance tests.
-// Set HUDDLE_FLAVOR_ID to override; the test is skipped if unset.
-func testAccFlavorID(t *testing.T) string {
+// testAccFlavorName returns the flavor name to use for instance tests (e.g. "anton-2").
+// Set HUDDLE_FLAVOR_NAME to override; the test is skipped if unset.
+func testAccFlavorName(t *testing.T) string {
 	t.Helper()
-	v := os.Getenv("HUDDLE_FLAVOR_ID")
+	v := os.Getenv("HUDDLE_FLAVOR_NAME")
 	if v == "" {
-		t.Skip("HUDDLE_FLAVOR_ID not set — skipping instance acceptance tests")
+		t.Skip("HUDDLE_FLAVOR_NAME not set — skipping instance acceptance tests")
 	}
 	return v
 }
 
-// testAccImageID returns the image ID to use for instance tests.
-// Set HUDDLE_IMAGE_ID to override; the test is skipped if unset.
-func testAccImageID(t *testing.T) string {
+// testAccImageName returns the image name to use for instance tests (e.g. "ubuntu-22.04").
+// Set HUDDLE_IMAGE_NAME to override; the test is skipped if unset.
+func testAccImageName(t *testing.T) string {
 	t.Helper()
-	v := os.Getenv("HUDDLE_IMAGE_ID")
+	v := os.Getenv("HUDDLE_IMAGE_NAME")
 	if v == "" {
-		t.Skip("HUDDLE_IMAGE_ID not set — skipping instance acceptance tests")
+		t.Skip("HUDDLE_IMAGE_NAME not set — skipping instance acceptance tests")
 	}
 	return v
 }

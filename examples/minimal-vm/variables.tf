@@ -8,11 +8,11 @@ variable "region" {
   default = "eu2"
 }
 
-variable "flavor_id" {
+variable "flavor_name" {
   type = string
 }
 
-variable "image_id" {
+variable "image_name" {
   type = string
 }
 
