@@ -54,7 +54,11 @@ func (d *imagesDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 								Attributes: map[string]schema.Attribute{
 									"id": schema.StringAttribute{
 										Computed:            true,
-										MarkdownDescription: "Unique image ID to use in `image_id` module inputs.",
+										MarkdownDescription: "Unique image ID (OpenStack UUID).",
+									},
+									"name": schema.StringAttribute{
+										Computed:            true,
+										MarkdownDescription: "Image name to use in `image_name` resource inputs (e.g. `ubuntu-22.04`).",
 									},
 									"version": schema.StringAttribute{
 										Computed:            true,
@@ -98,6 +102,7 @@ func (d *imagesDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 
 	versionTypes := map[string]attr.Type{
 		"id":      types.StringType,
+		"name":    types.StringType,
 		"version": types.StringType,
 	}
 	groupTypes := map[string]attr.Type{
@@ -111,6 +116,7 @@ func (d *imagesDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 		for _, v := range g.Versions {
 			obj, diags := types.ObjectValue(versionTypes, map[string]attr.Value{
 				"id":      types.StringValue(v.ID),
+				"name":    types.StringValue(v.Name),
 				"version": types.StringValue(v.Version),
 			})
 			resp.Diagnostics.Append(diags...)

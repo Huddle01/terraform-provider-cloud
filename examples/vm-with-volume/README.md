@@ -11,8 +11,8 @@ This example provisions:
 ## Required variables
 
 - `huddle_api_key`
-- `flavor_id`
-- `image_id`
+- `flavor_name`
+- `image_name`
 - `ssh_public_key`
 
 Optional:

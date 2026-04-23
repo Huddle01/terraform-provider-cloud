@@ -40,8 +40,8 @@ resource "huddle_cloud_volume" "data" {
 resource "huddle_cloud_instance" "vm" {
   name                 = "vm-with-volume"
   region               = var.region
-  flavor_id            = var.flavor_id
-  image_id             = var.image_id
+  flavor_name          = "anton-2"
+  image_name           = "ubuntu-22.04"
   key_names            = [huddle_cloud_keypair.example.name]
   security_group_names = ["default"]
 }
