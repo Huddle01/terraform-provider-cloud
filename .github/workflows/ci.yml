@@ -62,17 +62,17 @@ jobs:
 
       - name: Run unit tests
         # Excludes TestAcc* acceptance tests — those require a live API
-        run: go test ./... -run "^Test[^A]|^TestA[^c]|^TestAc[^c]" -v -count=1 -timeout 5m
+        run: go test ./... -run "^Test[^A]|^TestA[^c]|^TestAc[^c]" -v -count=1 -timeout
+          5m
 
   acceptance-test:
     name: Acceptance Tests
     runs-on: ubuntu-latest
     permissions:
-      pull-requests: write  # needed to remove the trigger label after the run
+      pull-requests: write # needed to remove the trigger label after the run
     # Run on pushes to main, or when a maintainer adds the 'acceptance-tests' label to a PR.
     if: >
-      github.event_name == 'push' ||
-      (github.event_name == 'pull_request' &&
+      github.event_name == 'push' || (github.event_name == 'pull_request' &&
        github.event.action == 'labeled' &&
        github.event.label.name == 'acceptance-tests')
     steps:
@@ -100,6 +100,11 @@ jobs:
           go-version-file: "go.mod"
           cache: true
 
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~> 1.7"
+          terraform_wrapper: false
+
       - name: Run acceptance tests
         env:
           TF_ACC: "1"
@@ -109,7 +114,9 @@ jobs:
           HUDDLE_SSH_PUBLIC_KEY: ${{ secrets.HUDDLE_SSH_PUBLIC_KEY }}
           HUDDLE_FLAVOR_NAME: ${{ secrets.HUDDLE_FLAVOR_NAME }}
           HUDDLE_IMAGE_NAME: ${{ secrets.HUDDLE_IMAGE_NAME }}
-        run: go test ./... -run TestAcc -v -timeout 30m
+        run: |
+          export TF_ACC_TERRAFORM_PATH="$(which terraform)"
+          go test ./... -run TestAcc -v -timeout 30m
 
       - name: Remove trigger label
         # Always remove the label after the run (pass or fail) so the maintainer
@@ -119,4 +126,3 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh pr edit ${{ github.event.pull_request.number }} --remove-label "acceptance-tests" || true
-
