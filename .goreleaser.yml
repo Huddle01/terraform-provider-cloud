@@ -10,6 +10,8 @@ builds:
   - id: terraform-provider-cloud
     main: ./main.go
     binary: "{{ .ProjectName }}_v{{ .Version }}"
+    ldflags:
+      - "-X main.Version={{ .Version }}"
     env:
       - CGO_ENABLED=0
     goos:

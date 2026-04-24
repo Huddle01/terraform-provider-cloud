@@ -9,6 +9,10 @@ import (
 	"github.com/huddle01/terraform-provider-cloud/internal/provider"
 )
 
+// Version is the provider version reported to Terraform (provider metadata).
+// Overridden at build time via: -ldflags "-X main.Version=<version>".
+var Version = "dev"
+
 func main() {
 	var debug bool
 	flag.BoolVar(&debug, "debug", false, "set to true to run the provider with support for debuggers")
@@ -19,7 +23,7 @@ func main() {
 		Debug:   debug,
 	}
 
-	err := providerserver.Serve(context.Background(), provider.New("dev"), opts)
+	err := providerserver.Serve(context.Background(), provider.New(Version), opts)
 	if err != nil {
 		log.Fatal(err.Error())
 	}

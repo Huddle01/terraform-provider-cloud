@@ -332,6 +332,14 @@ func (r *instanceResource) Read(ctx context.Context, req resource.ReadRequest, r
 	if next.ImageName.ValueString() == "" {
 		next.ImageName = state.ImageName
 	}
+	// Avoid perpetual diffs when the API returns the same identifier with
+	// different casing (e.g. "Ubuntu-22.04" vs "ubuntu-22.04").
+	if strings.EqualFold(next.FlavorName.ValueString(), state.FlavorName.ValueString()) {
+		next.FlavorName = state.FlavorName
+	}
+	if strings.EqualFold(next.ImageName.ValueString(), state.ImageName.ValueString()) {
+		next.ImageName = state.ImageName
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, next)...)
 }
@@ -442,8 +450,8 @@ func (r *instanceResource) readInstance(ctx context.Context, id, region string) 
 	model := &instanceResourceModel{
 		ID:          types.StringValue(out.Instance.ID),
 		Name:        types.StringValue(out.Instance.Name),
-		FlavorName:  types.StringValue(out.Instance.FlavorName),
-		ImageName:   types.StringValue(out.Instance.Image.Name),
+		FlavorName:  types.StringValue(strings.ToLower(out.Instance.FlavorName)),
+		ImageName:   types.StringValue(strings.ToLower(out.Instance.Image.Name)),
 		Status:      types.StringValue(out.Instance.Status),
 		VCPUs:       types.Float64Value(out.Instance.VCPUs),
 		RAM:         types.Float64Value(out.Instance.RAM),
