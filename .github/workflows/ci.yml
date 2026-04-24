@@ -47,7 +47,12 @@ jobs:
         run: go vet ./...
 
       - name: Build
-        run: go build ./...
+        run: |
+          VERSION="dev"
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+          fi
+          make build VERSION="$VERSION"
 
   unit-test:
     name: Unit Tests
