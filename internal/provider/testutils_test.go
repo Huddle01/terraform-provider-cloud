@@ -3,6 +3,7 @@ package provider
 import (
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -62,7 +63,7 @@ func testAccFlavorName(t *testing.T) string {
 	if v == "" {
 		t.Skip("HUDDLE_FLAVOR_NAME not set — skipping instance acceptance tests")
 	}
-	return v
+	return strings.ToLower(v)
 }
 
 // testAccImageName returns the image name to use for instance tests (e.g. "ubuntu-22.04").
@@ -73,7 +74,7 @@ func testAccImageName(t *testing.T) string {
 	if v == "" {
 		t.Skip("HUDDLE_IMAGE_NAME not set — skipping instance acceptance tests")
 	}
-	return v
+	return strings.ToLower(v)
 }
 
 // testAccSGName returns the security group name to use for instance tests.

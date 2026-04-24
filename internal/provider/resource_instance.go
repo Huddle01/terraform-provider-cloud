@@ -23,6 +23,24 @@ var _ resource.Resource = &instanceResource{}
 var _ resource.ResourceWithConfigure = &instanceResource{}
 var _ resource.ResourceWithImportState = &instanceResource{}
 
+// lowercaseModifier normalizes a string attribute to lowercase at plan time so
+// that the planned value always matches the lowercase value the API returns,
+// preventing "inconsistent result after apply" errors from case differences.
+type lowercaseModifier struct{}
+
+func (lowercaseModifier) Description(context.Context) string {
+	return "Normalizes the value to lowercase."
+}
+func (lowercaseModifier) MarkdownDescription(ctx context.Context) string {
+	return "Normalizes the value to lowercase."
+}
+func (lowercaseModifier) PlanModifyString(_ context.Context, req planmodifier.StringRequest, resp *planmodifier.StringResponse) {
+	if req.PlanValue.IsUnknown() || req.PlanValue.IsNull() {
+		return
+	}
+	resp.PlanValue = types.StringValue(strings.ToLower(req.PlanValue.ValueString()))
+}
+
 type instanceResource struct {
 	client *apiClient
 }
@@ -70,14 +88,16 @@ func (r *instanceResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 				PlanModifiers:       []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"flavor_name": schema.StringAttribute{
-				Required:            true,
-				MarkdownDescription: "Name of the flavor (hardware profile) to use (e.g. `anton-2`, `anton-4`). Use the `huddle_cloud_flavors` data source to list available flavors.",
-				PlanModifiers:       []planmodifier.String{stringplanmodifier.RequiresReplace()},
+				Optional:            true,
+				Computed:            true,
+				MarkdownDescription: "Name of the flavor (hardware profile) to use (e.g. `anton-2`, `anton-4`). Normalised to lower-case. Use the `huddle_cloud_flavors` data source to list available flavors.",
+				PlanModifiers:       []planmodifier.String{lowercaseModifier{}, stringplanmodifier.RequiresReplaceIfConfigured()},
 			},
 			"image_name": schema.StringAttribute{
-				Required:            true,
-				MarkdownDescription: "Name of the OS image to boot from (e.g. `ubuntu-22.04`). Use the `huddle_cloud_images` data source to list available images.",
-				PlanModifiers:       []planmodifier.String{stringplanmodifier.RequiresReplace()},
+				Optional:            true,
+				Computed:            true,
+				MarkdownDescription: "Name of the OS image to boot from (e.g. `ubuntu-22.04`). Normalised to lower-case. Use the `huddle_cloud_images` data source to list available images.",
+				PlanModifiers:       []planmodifier.String{lowercaseModifier{}, stringplanmodifier.RequiresReplaceIfConfigured()},
 			},
 			"boot_disk_size": schema.Int64Attribute{
 				Required:            true,
@@ -272,8 +292,8 @@ func (r *instanceResource) Create(ctx context.Context, req resource.CreateReques
 			return
 		}
 		plan = *finalState
-		plan.FlavorName = originalPlan.FlavorName
-		plan.ImageName = originalPlan.ImageName
+		plan.FlavorName = types.StringValue(strings.ToLower(originalPlan.FlavorName.ValueString()))
+		plan.ImageName = types.StringValue(strings.ToLower(originalPlan.ImageName.ValueString()))
 		plan.BootDiskSize = originalPlan.BootDiskSize
 		plan.KeyNames = originalPlan.KeyNames
 		plan.SecurityGroupNames = originalPlan.SecurityGroupNames
